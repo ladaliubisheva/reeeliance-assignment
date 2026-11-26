@@ -131,6 +131,13 @@ def test_read_raw_csv_accepts_file_with_bom(tmp_path):
     assert rows == [(2, {"id": "1", "name": "Jane", "status": "active"})]
 
 
+def test_read_raw_csv_rejects_empty_file(tmp_path):
+    path = tmp_path / "raw.csv"
+    path.write_text("", encoding="utf-8")
+    with pytest.raises(ValueError, match="file is empty"):
+        read_raw_csv(path, COLUMNS)
+
+
 def test_read_raw_csv_rejects_unexpected_header(tmp_path):
     path = tmp_path / "raw.csv"
     path.write_text("wrong,header\n", encoding="utf-8")

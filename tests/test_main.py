@@ -155,6 +155,24 @@ def test_stopped_run_is_recorded_and_earlier_runs_are_kept(project):
     assert first["inputs"]["raw_customers.csv"] != second["inputs"]["raw_customers.csv"]
 
 
+def test_missing_input_file_is_recorded_as_stopped_run(project):
+    (project / "data" / "raw" / "raw_orders.csv").unlink()
+
+    with pytest.raises(SystemExit):
+        main.main(project)
+
+    [run_record] = read_history(project)
+    assert run_record["status"] == "stopped"
+    assert "raw_orders.csv" in run_record["error"]
+
+
+def test_missing_input_file_stops_core_only_run_cleanly(project):
+    (project / "data" / "raw" / "raw_orders.csv").unlink()
+
+    with pytest.raises(SystemExit):
+        main.main(project, with_extras=False)
+
+
 def test_core_only_writes_no_run_history(project):
     main.main(project, with_extras=False)
 

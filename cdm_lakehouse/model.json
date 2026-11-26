@@ -3,11 +3,11 @@
   "description": "CDM Manifest for Ingested Customer and Sales Data",
   "version": "1.0",
   "application": "cdm-ingestion-pipeline",
-  "modifiedTime": "2026-11-26T16:16:10Z",
+  "modifiedTime": "2026-11-26T17:18:06Z",
   "annotations": [
     {
       "name": "pipeline:runId",
-      "value": "20261126T161610Z"
+      "value": "20261126T171806Z"
     }
   ],
   "entities": [
@@ -50,7 +50,7 @@
       "partitions": [
         {
           "name": "ContactPartitions",
-          "refreshTime": "2026-11-26T16:16:10Z",
+          "refreshTime": "2026-11-26T17:18:06Z",
           "location": "Contact/Contact.csv",
           "fileFormatSettings": {
             "$type": "CsvFormatSettings",
@@ -89,7 +89,7 @@
       "partitions": [
         {
           "name": "SalesOrderPartitions",
-          "refreshTime": "2026-11-26T16:16:10Z",
+          "refreshTime": "2026-11-26T17:18:06Z",
           "location": "SalesOrder/SalesOrder.csv",
           "fileFormatSettings": {
             "$type": "CsvFormatSettings",

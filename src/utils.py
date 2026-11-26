@@ -74,6 +74,8 @@ def read_raw_csv(path, expected_columns):
     with open(path, newline="", encoding="utf-8-sig") as f:
         lines = list(csv.reader(f))
 
+    if not lines:
+        raise ValueError(f"{path}: file is empty")
     header = lines[0]
     if header != expected_columns:
         raise ValueError(f"{path}: expected columns {expected_columns}, got {header}")

@@ -1,7 +1,8 @@
 """Transform raw_orders.csv into rows of the CDM SalesOrder entity."""
 
 import logging
-from decimal import Decimal, InvalidOperation
+import re
+from decimal import Decimal
 
 from utils import check_primary_keys, make_rejected, parse_timestamp, read_raw_csv
 
@@ -10,16 +11,19 @@ logger = logging.getLogger("orders")
 RAW_COLUMNS = ["tx_id", "customer_id", "amount_usd", "tx_timestamp"]
 SALESORDER_COLUMNS = ["salesorderid", "customerid", "totalamount", "createdon"]
 
+# e.g. "250.50", "-15", "+3.5"
+AMOUNT_PATTERN = re.compile(r"[+-]?[0-9]+(\.[0-9]+)?")
+
 
 def parse_amount(value):
-    """Parse an amount as an exact Decimal. Returns None if it is not a valid number."""
-    try:
-        amount = Decimal(value)
-    except InvalidOperation:
+    """Parse an amount as an exact Decimal. Returns None if it is not a plain decimal number.
+
+    Only an optional sign, ASCII digits and an optional decimal part are accepted.
+    Decimal() alone would also accept "1_000", "1e3", "NaN" or non-ASCII digits.
+    """
+    if not AMOUNT_PATTERN.fullmatch(value):
         return None
-    if not amount.is_finite():  # "NaN" and "Infinity" are valid Decimals, but not amounts
-        return None
-    return amount
+    return Decimal(value)
 
 
 def transform_orders(raw_path, contact_ids):

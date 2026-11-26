@@ -86,16 +86,16 @@ def main(root=PROJECT_ROOT, with_extras=True):
     setup_logging(root / "logs" / log_name)
     logger.info("run %s started%s", run_id, "" if with_extras else " (core only)")
 
-    if with_extras:  # checksums are taken before processing starts
-        inputs = {name: {"sha256": extras.file_sha256(raw_dir / name)}
-                  for name in [CUSTOMERS_FILE, ORDERS_FILE]}
-
+    inputs = {}
     run = {"status": "success"}
     try:
+        if with_extras:  # checksums are taken before processing starts
+            inputs = {name: {"sha256": extras.file_sha256(raw_dir / name)}
+                      for name in [CUSTOMERS_FILE, ORDERS_FILE]}
         run["counts"] = run_pipeline(raw_dir, root / "cdm_lakehouse", root / "data" / "rejected",
                                      with_extras, run_id, started_at)
-    except ValueError as error:  # wrong header or failed reconciliation
-        logger.error("pipeline stopped, no outputs written: %s", error)
+    except (ValueError, OSError) as error:  # bad/missing input file or failed reconciliation
+        logger.error("pipeline stopped: %s", error)
         run = {"status": "stopped", "error": str(error)}
 
     if with_extras:

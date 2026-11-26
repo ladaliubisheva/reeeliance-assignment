@@ -24,13 +24,21 @@ def run(tmp_path, *lines):
     ("250.50", Decimal("250.50")),
     ("1200.00", Decimal("1200.00")),
     ("-15.00", Decimal("-15.00")),
+    ("+3.5", Decimal("3.5")),
     ("0", Decimal("0")),
 ])
 def test_valid_amounts(value, expected):
     assert parse_amount(value) == expected
 
 
-@pytest.mark.parametrize("value", ["", "abc", "1,200.00", "NaN", "Infinity", "12.5 USD"])
+@pytest.mark.parametrize("value", [
+    "", "abc", "1,200.00", "NaN", "Infinity", "12.5 USD",
+    "1_000",          # Decimal() would accept this as 1000
+    "1e3",            # scientific notation
+    "\u0661\u0662",   # Arabic-Indic digits, Decimal() would read them as 12
+    ".5", "5.",       # incomplete numbers
+    "5\n",            # trailing line break
+])
 def test_invalid_amounts(value):
     assert parse_amount(value) is None
 
