@@ -84,6 +84,15 @@ def test_timestamp_assumption_is_logged_with_id(caplog):
     assert "CST-003" in caplog.text
 
 
+def test_unparseable_signup_date_is_set_to_empty_and_contact_is_loaded(caplog):
+    # Deliberate: createdon is not essential for a contact. Rejecting the contact would
+    # also turn all of its orders into orphans.
+    contact = transform_contact(raw_row(signup_date="not-a-date"))
+    assert contact["createdon"] == ""
+    assert contact["contactid"] == "CST-001"
+    assert "could not be parsed" in caplog.text
+
+
 def test_single_word_name_is_logged(caplog):
     transform_contact(raw_row(full_name="Madonna"))
     assert "single-word name" in caplog.text

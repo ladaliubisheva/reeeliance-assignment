@@ -1,3 +1,4 @@
+import csv
 from datetime import timedelta, timezone
 
 import pytest
@@ -110,6 +111,21 @@ def test_read_raw_csv_does_not_merge_short_line_into_valid_next_line(tmp_path):
 
     assert rows == [(3, {"id": "2", "name": "Bob", "status": "inactive"})]
     assert rejected == [{"line_number": 2, "reason": "wrong number of fields", "values": "1"}]
+
+
+def test_rejected_values_keep_fields_with_commas_unambiguous(tmp_path):
+    # A quoted field containing a comma must stay one field in the rejected file.
+    path = write_raw(tmp_path, '1,"Doe, Jane",active,extra\n')
+
+    _, rejected, _ = read_raw_csv(path, COLUMNS)
+    assert rejected[0]["values"] == '1,"Doe, Jane",active,extra'
+
+    # Round trip: write the rejected file and read the original fields back.
+    rejected_file = tmp_path / "rejected.csv"
+    write_csv(rejected_file, ["line_number", "reason", "values"], rejected)
+    with open(rejected_file, newline="", encoding="utf-8") as f:
+        stored = next(csv.DictReader(f))["values"]
+    assert next(csv.reader([stored])) == ["1", "Doe, Jane", "active", "extra"]
 
 
 def test_read_raw_csv_quarantines_unrepairable_lines(tmp_path):

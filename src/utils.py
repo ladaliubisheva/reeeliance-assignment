@@ -1,6 +1,7 @@
 """Shared helpers: logging, CSV reading/writing, data quality checks, timestamps, emails."""
 
 import csv
+import io
 import logging
 import re
 from datetime import datetime, timezone
@@ -48,8 +49,14 @@ def setup_logging(log_file):
 
 
 def make_rejected(line_number, reason, values):
-    """Build one row for a quarantine file."""
-    return {"line_number": line_number, "reason": reason, "values": ",".join(values)}
+    """Build one row for a quarantine file.
+
+    The values are stored as one CSV line, so fields containing commas or quotes stay
+    unambiguous (e.g. CST-006,"Doe, Jane",bad-email).
+    """
+    buffer = io.StringIO()
+    csv.writer(buffer, lineterminator="").writerow(values)
+    return {"line_number": line_number, "reason": reason, "values": buffer.getvalue()}
 
 
 def clean_row(columns, values):

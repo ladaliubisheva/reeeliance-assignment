@@ -166,7 +166,9 @@ flowchart LR
 ## Data quality rules
 
 Issues that can be resolved deterministically, without inferring missing information, are
-corrected and logged as warnings. All other invalid records are excluded from the target and
+corrected and logged as warnings. Invalid values in non-essential attributes (email, status,
+contact `createdon`) are set to null and the record is loaded. Records with an invalid key or an
+invalid essential attribute (order amount, order timestamp) are excluded from the target and
 written to `data/rejected/` for manual review.
 
 Corrected (logged as warning):
@@ -177,7 +179,8 @@ Corrected (logged as warning):
 - Timestamps without timezone are interpreted as UTC, consistent with all other timestamps in the
   sources (suffix `Z`). Date-only values are set to `00:00:00`. The source timezone is configured
   in `utils.SOURCE_TIMEZONE`.
-- Invalid email addresses and unknown status values are set to null.
+- Invalid email addresses, unknown status values and unparseable contact signup dates are set
+  to null. Rejecting the contact instead would also reject all of its orders as orphans.
 - Exact duplicate records are deduplicated.
 
 Rejected:
